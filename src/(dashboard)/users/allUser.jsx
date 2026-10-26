@@ -24,7 +24,7 @@ import CreateUser from "./createUser";
 import UpdateUser from "./updateUser";
 import ViewUser from "./viewUser";
 
-const API_URL = "http://localhost:5000/api/users";
+const API_URL = "https://icareteleradiology-backend.vercel.app/api/users";
 const ACTIVATE_URL = `${API_URL}/activate`;
 const DEACTIVATE_URL = `${API_URL}/deactivate`;
 
