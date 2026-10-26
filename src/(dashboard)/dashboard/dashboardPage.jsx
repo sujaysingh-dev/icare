@@ -28,24 +28,44 @@ export default function DashboardPage() {
         }
     };
 
+    // Clear session and redirect to login
+    const handleSessionExpired = () => {
+        localStorage.removeItem("responseList");
+        localStorage.removeItem("token");
+
+        toast.error("Session expired. Please login again.");
+
+        window.location.replace("/login");
+    };
+
+    // Get authorization headers
+    const getAuthHeaders = () => {
+        const token = getToken();
+
+        if (!token) {
+            handleSessionExpired();
+            return null;
+        }
+
+        return {
+            Authorization: token.startsWith("Bearer ")
+                ? token
+                : `Bearer ${token}`,
+            "Content-Type": "application/json",
+        };
+    };
+
     // Fetch dashboard data
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         setError("");
 
         try {
-            const token = getToken();
+            const headers = getAuthHeaders();
 
-            if (!token) {
-                throw new Error("Session expired. Please login again.");
+            if (!headers) {
+                return;
             }
-
-            const headers = {
-                Authorization: token.startsWith("Bearer ")
-                    ? token
-                    : `Bearer ${token}`,
-                "Content-Type": "application/json",
-            };
 
             const payload = {
                 genericRequestEntity: {
@@ -105,6 +125,12 @@ export default function DashboardPage() {
                 response: err.response?.data,
                 url: err.config?.url,
             });
+
+            // If token is expired or unauthorized
+            if (err.response?.status === 401) {
+                handleSessionExpired();
+                return;
+            }
 
             const message =
                 err.response?.data?.errorMessage ||
@@ -206,7 +232,9 @@ export default function DashboardPage() {
                         </div>
 
                         <p className="mt-4 text-xs text-gray-400">
-                            {loading ? "Loading data..." : "Total records"}
+                            {loading
+                                ? "Loading data..."
+                                : "Total records"}
                         </p>
                     </div>
                 ))}
