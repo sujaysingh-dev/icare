@@ -3,7 +3,7 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/centers/create";
+const API_URL = "https://icareteleradiology-backend.vercel.app/api/centers/create";
 
 const initialForm = {
     entityBusinessName: "",
