@@ -1,4 +1,3 @@
-```jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiUsers, FiMapPin, FiRefreshCw } from "react-icons/fi";
@@ -129,4 +128,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-```
