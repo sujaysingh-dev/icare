@@ -54,6 +54,33 @@ export default function DashboardPage() {
         };
     };
 
+    // Get total count from common API response fields
+    const getTotalCount = (data) => {
+        const possibleCounts = [
+            data?.totalCount,
+            data?.totalRecords,
+            data?.totalElements,
+            data?.total,
+            data?.responseCount,
+            data?.pagination?.totalCount,
+            data?.pagination?.totalRecords,
+            data?.pageInfo?.totalCount,
+            data?.responseData?.totalCount,
+            data?.responseData?.totalRecords,
+        ];
+
+        const total = possibleCounts.find(
+            (value) =>
+                value !== null &&
+                value !== undefined &&
+                value !== "" &&
+                Number.isFinite(Number(value)) &&
+                Number(value) >= 0
+        );
+
+        return total === undefined ? null : Number(total);
+    };
+
     // Fetch dashboard data
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
@@ -80,6 +107,7 @@ export default function DashboardPage() {
             const usersData = usersResponse.data;
             const centersData = centersResponse.data;
 
+            // Validate API responses
             if (
                 usersData?.success === false ||
                 usersData?.responseStatus === false
@@ -102,6 +130,7 @@ export default function DashboardPage() {
                 );
             }
 
+            // Extract records
             const users = Array.isArray(usersData?.responseList)
                 ? usersData.responseList
                 : [];
@@ -110,8 +139,18 @@ export default function DashboardPage() {
                 ? centersData.responseList
                 : [];
 
-            setTotalUsers(users.length);
-            setTotalCenters(centers.length);
+            // Debug API responses when verifying totals
+            console.log("Users API response:", usersData);
+            console.log("Centers API response:", centersData);
+            console.log("Centers returned:", centers.length);
+            console.log("Centers total count:", getTotalCount(centersData));
+
+            // Prefer the server's total count when available
+            const usersTotal = getTotalCount(usersData);
+            const centersTotal = getTotalCount(centersData);
+
+            setTotalUsers(usersTotal ?? users.length);
+            setTotalCenters(centersTotal ?? centers.length);
         } catch (err) {
             console.error("Dashboard API Error:", {
                 message: err.message,
@@ -129,9 +168,9 @@ export default function DashboardPage() {
                 err.response?.data?.errorMessage ||
                 err.response?.data?.message ||
                 (err.response?.status
-                    ? `API request failed (${err.response.status})`
+                    ? `API request failed (${err.response.status}).`
                     : err.message) ||
-                "Dashboard data load nahi ho saka.";
+                "Unable to load dashboard data.";
 
             setError(message);
             toast.error(message);
@@ -202,37 +241,37 @@ export default function DashboardPage() {
                 </div>
             )}
 
-           {/* Dashboard Cards */}
-<div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-    {cards.map((card) => (
-        <div
-            key={card.title}
-            className="w-full border border-gray-200 bg-white p-5 shadow-sm"
-        >
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-500">
-                        {card.title}
-                    </p>
+            {/* Dashboard Cards */}
+            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                {cards.map((card) => (
+                    <div
+                        key={card.title}
+                        className="w-full border border-gray-200 bg-white p-5 shadow-sm"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">
+                                    {card.title}
+                                </p>
 
-                    <h2 className="mt-3 text-3xl font-semibold text-gray-900">
-                        {loading ? "..." : card.count}
-                    </h2>
-                </div>
+                                <h2 className="mt-3 text-3xl font-semibold text-gray-900">
+                                    {loading ? "..." : card.count}
+                                </h2>
+                            </div>
 
-                <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center ${card.iconStyle}`}
-                >
-                    {card.icon}
-                </div>
+                            <div
+                                className={`flex h-12 w-12 shrink-0 items-center justify-center ${card.iconStyle}`}
+                            >
+                                {card.icon}
+                            </div>
+                        </div>
+
+                        <p className="mt-4 text-xs text-gray-400">
+                            {loading ? "Loading data..." : "Total records"}
+                        </p>
+                    </div>
+                ))}
             </div>
-
-            <p className="mt-4 text-xs text-gray-400">
-                {loading ? "Loading data..." : "Total records"}
-            </p>
-        </div>
-    ))}
-</div>
         </div>
     );
 }
