@@ -10,6 +10,7 @@ export default function Landing(){
     return(
         <div className="h-screen flex flex-col items-center justify-center gap-8">
 
+            <div>Sujay Singh</div>
             <div className="text-7xl">
                 (●'◡'●)
             </div>
