@@ -24,7 +24,7 @@ import CreateCenter from "./createCenter";
 import UpdateCenter from "./updateCenter";
 import ViewCenter from "./viewCenter";
 
-const API_URL = "http://localhost:5000/api/centers";
+const API_URL = "https://icareteleradiology-backend.vercel.app/api/centers";
 const ACTIVATE_API_URL = `${API_URL}/activate`;
 const DEACTIVATE_API_URL = `${API_URL}/deactivate`;
 
