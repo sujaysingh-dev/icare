@@ -1,4 +1,3 @@
-```jsx
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -6,73 +5,116 @@ import {
     FiMapPin,
     FiRefreshCw,
 } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const API_URL = "https://icareteleradiology-backend.vercel.app/api";
 
 export default function DashboardPage() {
     const [totalUsers, setTotalUsers] = useState(0);
     const [totalCenters, setTotalCenters] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const fetchDashboardData = useCallback(async () => {
+    // Get token using the same logic as AllUsers.jsx
+    const getToken = () => {
         try {
-            setLoading(true);
-            setError("");
-
-            const responseList = JSON.parse(
-                localStorage.getItem("responseList") || "[]"
+            const savedResponse = JSON.parse(
+                localStorage.getItem("responseList") || "null"
             );
 
-            const token =
-                responseList?.[0]?.token ||
-                localStorage.getItem("token");
+            const user = Array.isArray(savedResponse)
+                ? savedResponse[0]
+                : savedResponse?.responseList?.[0] ?? savedResponse;
 
-            const config = {
-                headers: token
-                    ? { Authorization: `Bearer ${token}` }
-                    : {},
+            return (
+                user?.token ||
+                localStorage.getItem("token") ||
+                null
+            );
+        } catch {
+            return localStorage.getItem("token");
+        }
+    };
+
+    // Fetch users and centers
+    const fetchDashboardData = useCallback(async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const token = getToken();
+
+            if (!token) {
+                throw new Error("Session expired. Please login again.");
+            }
+
+            const headers = {
+                Authorization: token.startsWith("Bearer ")
+                    ? token
+                    : `Bearer ${token}`,
+                "Content-Type": "application/json",
+            };
+
+            const payload = {
+                genericRequestEntity: {
+                    companyID: 1,
+                    dropDown: false,
+                    detailFlag: false,
+                },
             };
 
             const [usersResponse, centersResponse] = await Promise.all([
                 axios.post(
                     `${API_URL}/users`,
-                    {
-                        genericRequestEntity: {
-                            companyID: 1,
-                            dropDown: false,
-                            detailFlag: false,
-                        },
-                    },
-                    config
+                    payload,
+                    { headers }
                 ),
-
                 axios.post(
                     `${API_URL}/centers`,
-                    {
-                        genericRequestEntity: {
-                            companyID: 1,
-                            dropDown: false,
-                            detailFlag: false,
-                        },
-                    },
-                    config
+                    payload,
+                    { headers }
                 ),
             ]);
 
-            const users = usersResponse.data?.responseList;
-            const centers = centersResponse.data?.responseList;
+            const usersData = usersResponse.data;
+            const centersData = centersResponse.data;
 
-            if (!Array.isArray(users) || !Array.isArray(centers)) {
+            if (
+                usersData?.success === false ||
+                usersData?.responseStatus === false ||
+                Number(usersData?.statusCode) >= 400
+            ) {
                 throw new Error(
-                    "API response format is incorrect. Check backend routes."
+                    usersData?.errorMessage ||
+                    usersData?.message ||
+                    "Unable to fetch users."
                 );
             }
+
+            if (
+                centersData?.success === false ||
+                centersData?.responseStatus === false ||
+                Number(centersData?.statusCode) >= 400
+            ) {
+                throw new Error(
+                    centersData?.errorMessage ||
+                    centersData?.message ||
+                    "Unable to fetch centers."
+                );
+            }
+
+            const users = Array.isArray(usersData?.responseList)
+                ? usersData.responseList
+                : [];
+
+            const centers = Array.isArray(centersData?.responseList)
+                ? centersData.responseList
+                : [];
 
             setTotalUsers(users.length);
             setTotalCenters(centers.length);
         } catch (err) {
-            console.error("Dashboard API Error:", {
+            console.error("Dashboard fetch error:", {
                 message: err.message,
                 status: err.response?.status,
                 data: err.response?.data,
@@ -80,10 +122,13 @@ export default function DashboardPage() {
             });
 
             setError(
+                err.response?.data?.errorMessage ||
                 err.response?.data?.message ||
                 err.message ||
                 "Dashboard data load nahi ho saka."
             );
+
+            toast.error("Dashboard data load nahi ho saka.");
         } finally {
             setLoading(false);
         }
@@ -116,7 +161,7 @@ export default function DashboardPage() {
                         Dashboard
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Overview of your centers and users
+                        Manage your centers and users
                     </p>
                 </div>
 
@@ -124,7 +169,7 @@ export default function DashboardPage() {
                     type="button"
                     onClick={fetchDashboardData}
                     disabled={loading}
-                    className="flex items-center gap-2 rounded-sm border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-2 border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
                 >
                     <FiRefreshCw
                         className={loading ? "animate-spin" : ""}
@@ -142,7 +187,7 @@ export default function DashboardPage() {
                         onClick={fetchDashboardData}
                         className="font-medium underline"
                     >
-                        Try Again
+                        Retry
                     </button>
                 </div>
             )}
@@ -174,7 +219,7 @@ export default function DashboardPage() {
                         <p className="mt-4 text-xs text-gray-400">
                             {loading
                                 ? "Loading data..."
-                                : "Fetched from server"}
+                                : "Total records"}
                         </p>
                     </div>
                 ))}
@@ -182,4 +227,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-```
