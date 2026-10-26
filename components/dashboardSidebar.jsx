@@ -1,57 +1,96 @@
-
 import { NavLink, useNavigate } from "react-router-dom";
+import {
+    FiHome,
+    FiUsers,
+    FiMapPin,
+    FiLogOut,
+    FiX,
+} from "react-icons/fi";
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ onClose = () => {} }) {
     const navigate = useNavigate();
 
     const linkClass = ({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2 text-md font-medium rounded-sm transition-colors duration-150 ${isActive
-            ? "bg-white text-black"
-            : "text-white/80 hover:bg-white/10 hover:text-white"
+        `flex items-center gap-3 px-3 py-2 text-md font-medium rounded-sm transition-colors duration-150 ${
+            isActive
+                ? "bg-white text-black"
+                : "text-white/80 hover:bg-white/10 hover:text-white"
         }`;
 
-    function handleLogout() {
-        // Clear login-related data
-        [
-            "errorMessage",
-            "statusMessage",
-            "statusCode",
-            "success",
-            "date",
-            "responseList",
-        ].forEach((key) => localStorage.removeItem(key));
+    const handleLogout = () => {
+        localStorage.removeItem("responseList");
+        localStorage.removeItem("token");
 
+        onClose();
         navigate("/login", { replace: true });
-    }
+    };
 
-    const logoutStyle = "w-full flex items-center gap-3 px-3 py-2 text-md font-medium rounded-sm text-white/80 hover:bg-red-500/20 hover:text-red-400 transition-colors duration-150"
+    const handleNavigation = () => {
+        onClose();
+    };
 
     return (
-        <aside className="h-screen bg-black text-white w-40 flex flex-col rounded-r-sm shrink-0">
-            <div className="h-20 flex items-center justify-center text-2xl font-bold border-b border-white/10">
-                ICARE
+        <div className="flex h-full w-full flex-col bg-black px-4 py-5">
+
+            {/* Sidebar Header */}
+            <div className="mb-8 flex items-center justify-between">
+                <h2 className="text-xl font-bold tracking-wider text-white">
+                    ICARE
+                </h2>
+
+                {/* Close Button: Mobile Only */}
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="rounded-sm p-2 text-white hover:bg-white/10 md:hidden"
+                    aria-label="Close sidebar"
+                >
+                    <FiX size={22} />
+                </button>
             </div>
 
-            <nav className="flex flex-col p-3 gap-2">
-                <NavLink to="/dashboard" className={linkClass} end>
-                    Dashboard
+            {/* Navigation Links */}
+            <nav className="flex flex-1 flex-col gap-2">
+                <NavLink
+                    to="/dashboard"
+                    className={linkClass}
+                    onClick={handleNavigation}
+                >
+                    <FiHome size={20} />
+                    <span>Dashboard</span>
                 </NavLink>
 
-                <NavLink to="/centers" className={linkClass}>
-                    Centers
+                <NavLink
+                    to="/centers"
+                    className={linkClass}
+                    onClick={handleNavigation}
+                >
+                    <FiMapPin size={20} />
+                    <span>Centers</span>
                 </NavLink>
 
-                <NavLink to="/users" className={linkClass}>
-                    Users
+                <NavLink
+                    to="/users"
+                    className={linkClass}
+                    onClick={handleNavigation}
+                >
+                    <FiUsers size={20} />
+                    <span>Users</span>
                 </NavLink>
             </nav>
 
-            {/* Logout button at bottom */}
-            <div className="mt-auto p-3 border-t border-white/10">
-                <button type="button" onClick={handleLogout} className={logoutStyle}>
-                    Logout
+            {/* Logout at Bottom */}
+            <div className="mt-auto border-t border-white/10 pt-4">
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-md font-medium text-white/80 transition-colors hover:bg-red-500/20 hover:text-red-400"
+                >
+                    <FiLogOut size={20} />
+                    <span>Logout</span>
                 </button>
             </div>
-        </aside>
+
+        </div>
     );
 }
