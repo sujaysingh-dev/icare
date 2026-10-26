@@ -34,7 +34,6 @@ export default function DashboardPage() {
         localStorage.removeItem("token");
 
         toast.error("Session expired. Please login again.");
-
         window.location.replace("/login");
     };
 
@@ -63,9 +62,7 @@ export default function DashboardPage() {
         try {
             const headers = getAuthHeaders();
 
-            if (!headers) {
-                return;
-            }
+            if (!headers) return;
 
             const payload = {
                 genericRequestEntity: {
@@ -75,7 +72,6 @@ export default function DashboardPage() {
                 },
             };
 
-            // Call both APIs
             const [usersResponse, centersResponse] = await Promise.all([
                 axios.post(`${API_URL}/users`, payload, { headers }),
                 axios.post(`${API_URL}/centers`, payload, { headers }),
@@ -84,7 +80,6 @@ export default function DashboardPage() {
             const usersData = usersResponse.data;
             const centersData = centersResponse.data;
 
-            // Validate API responses
             if (
                 usersData?.success === false ||
                 usersData?.responseStatus === false
@@ -107,7 +102,6 @@ export default function DashboardPage() {
                 );
             }
 
-            // Extract records
             const users = Array.isArray(usersData?.responseList)
                 ? usersData.responseList
                 : [];
@@ -126,7 +120,6 @@ export default function DashboardPage() {
                 url: err.config?.url,
             });
 
-            // If token is expired or unauthorized
             if (err.response?.status === 401) {
                 handleSessionExpired();
                 return;
@@ -168,6 +161,7 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+            {/* Header */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900">
@@ -192,6 +186,7 @@ export default function DashboardPage() {
                 </button>
             </div>
 
+            {/* Error */}
             {error && (
                 <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                     <span>{error}</span>
@@ -207,11 +202,12 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {/* Dashboard Cards */}
+            <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2">
                 {cards.map((card) => (
                     <div
                         key={card.title}
-                        className="border border-gray-200 bg-white p-5 shadow-sm"
+                        className="w-full border border-gray-200 bg-white p-5 shadow-sm"
                     >
                         <div className="flex items-center justify-between">
                             <div>
@@ -225,16 +221,14 @@ export default function DashboardPage() {
                             </div>
 
                             <div
-                                className={`flex h-12 w-12 items-center justify-center ${card.iconStyle}`}
+                                className={`flex h-12 w-12 shrink-0 items-center justify-center ${card.iconStyle}`}
                             >
                                 {card.icon}
                             </div>
                         </div>
 
                         <p className="mt-4 text-xs text-gray-400">
-                            {loading
-                                ? "Loading data..."
-                                : "Total records"}
+                            {loading ? "Loading data..." : "Total records"}
                         </p>
                     </div>
                 ))}
