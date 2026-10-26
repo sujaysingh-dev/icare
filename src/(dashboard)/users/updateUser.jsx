@@ -11,7 +11,7 @@ import {
     FiLock,
 } from "react-icons/fi";
 
-const API_URL = "http://localhost:5000/api/users/update";
+const API_URL = "https://icareteleradiology-backend.vercel.app/api/users/update";
 
 const initialForm = {
     entityBusinessName: "",
