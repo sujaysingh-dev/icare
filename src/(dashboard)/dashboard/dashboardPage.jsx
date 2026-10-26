@@ -202,37 +202,37 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* Dashboard Cards */}
-            <div className="grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2">
-                {cards.map((card) => (
-                    <div
-                        key={card.title}
-                        className="w-full border border-gray-200 bg-white p-5 shadow-sm"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">
-                                    {card.title}
-                                </p>
+           {/* Dashboard Cards */}
+<div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+    {cards.map((card) => (
+        <div
+            key={card.title}
+            className="w-full border border-gray-200 bg-white p-5 shadow-sm"
+        >
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-gray-500">
+                        {card.title}
+                    </p>
 
-                                <h2 className="mt-3 text-3xl font-semibold text-gray-900">
-                                    {loading ? "..." : card.count}
-                                </h2>
-                            </div>
+                    <h2 className="mt-3 text-3xl font-semibold text-gray-900">
+                        {loading ? "..." : card.count}
+                    </h2>
+                </div>
 
-                            <div
-                                className={`flex h-12 w-12 shrink-0 items-center justify-center ${card.iconStyle}`}
-                            >
-                                {card.icon}
-                            </div>
-                        </div>
-
-                        <p className="mt-4 text-xs text-gray-400">
-                            {loading ? "Loading data..." : "Total records"}
-                        </p>
-                    </div>
-                ))}
+                <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center ${card.iconStyle}`}
+                >
+                    {card.icon}
+                </div>
             </div>
+
+            <p className="mt-4 text-xs text-gray-400">
+                {loading ? "Loading data..." : "Total records"}
+            </p>
+        </div>
+    ))}
+</div>
         </div>
     );
 }
