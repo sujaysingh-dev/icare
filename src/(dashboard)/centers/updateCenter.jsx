@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/centers/update";
+const API_URL = "https://icareteleradiology-backend.vercel.app/api/centers/update";
 
 const initialDetail = {
     entityBusinessName: "",
