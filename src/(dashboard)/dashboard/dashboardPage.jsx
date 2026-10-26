@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import {
-    FiUsers,
-    FiMapPin,
-    FiRefreshCw,
-} from "react-icons/fi";
+import { FiUsers, FiMapPin, FiRefreshCw } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const API_URL = "https://icareteleradiology-backend.vercel.app/api";
@@ -15,7 +11,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Get token using the same logic as AllUsers.jsx
+    // Get token from localStorage
     const getToken = () => {
         try {
             const savedResponse = JSON.parse(
@@ -26,17 +22,13 @@ export default function DashboardPage() {
                 ? savedResponse[0]
                 : savedResponse?.responseList?.[0] ?? savedResponse;
 
-            return (
-                user?.token ||
-                localStorage.getItem("token") ||
-                null
-            );
+            return user?.token || localStorage.getItem("token") || null;
         } catch {
             return localStorage.getItem("token");
         }
     };
 
-    // Fetch users and centers
+    // Fetch dashboard data
     const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         setError("");
@@ -63,26 +55,19 @@ export default function DashboardPage() {
                 },
             };
 
+            // Call both APIs
             const [usersResponse, centersResponse] = await Promise.all([
-                axios.post(
-                    `${API_URL}/users`,
-                    payload,
-                    { headers }
-                ),
-                axios.post(
-                    `${API_URL}/centers`,
-                    payload,
-                    { headers }
-                ),
+                axios.post(`${API_URL}/users`, payload, { headers }),
+                axios.post(`${API_URL}/centers`, payload, { headers }),
             ]);
 
             const usersData = usersResponse.data;
             const centersData = centersResponse.data;
 
+            // Validate API responses
             if (
                 usersData?.success === false ||
-                usersData?.responseStatus === false ||
-                Number(usersData?.statusCode) >= 400
+                usersData?.responseStatus === false
             ) {
                 throw new Error(
                     usersData?.errorMessage ||
@@ -93,8 +78,7 @@ export default function DashboardPage() {
 
             if (
                 centersData?.success === false ||
-                centersData?.responseStatus === false ||
-                Number(centersData?.statusCode) >= 400
+                centersData?.responseStatus === false
             ) {
                 throw new Error(
                     centersData?.errorMessage ||
@@ -103,6 +87,7 @@ export default function DashboardPage() {
                 );
             }
 
+            // Extract records
             const users = Array.isArray(usersData?.responseList)
                 ? usersData.responseList
                 : [];
@@ -114,21 +99,23 @@ export default function DashboardPage() {
             setTotalUsers(users.length);
             setTotalCenters(centers.length);
         } catch (err) {
-            console.error("Dashboard fetch error:", {
+            console.error("Dashboard API Error:", {
                 message: err.message,
                 status: err.response?.status,
-                data: err.response?.data,
+                response: err.response?.data,
                 url: err.config?.url,
             });
 
-            setError(
+            const message =
                 err.response?.data?.errorMessage ||
                 err.response?.data?.message ||
-                err.message ||
-                "Dashboard data load nahi ho saka."
-            );
+                (err.response?.status
+                    ? `API request failed (${err.response.status})`
+                    : err.message) ||
+                "Dashboard data load nahi ho saka.";
 
-            toast.error("Dashboard data load nahi ho saka.");
+            setError(message);
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -160,6 +147,7 @@ export default function DashboardPage() {
                     <h1 className="text-2xl font-semibold text-gray-900">
                         Dashboard
                     </h1>
+
                     <p className="mt-1 text-sm text-gray-500">
                         Manage your centers and users
                     </p>
@@ -185,7 +173,8 @@ export default function DashboardPage() {
                     <button
                         type="button"
                         onClick={fetchDashboardData}
-                        className="font-medium underline"
+                        disabled={loading}
+                        className="font-medium underline disabled:opacity-50"
                     >
                         Retry
                     </button>
@@ -217,9 +206,7 @@ export default function DashboardPage() {
                         </div>
 
                         <p className="mt-4 text-xs text-gray-400">
-                            {loading
-                                ? "Loading data..."
-                                : "Total records"}
+                            {loading ? "Loading data..." : "Total records"}
                         </p>
                     </div>
                 ))}
