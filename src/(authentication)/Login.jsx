@@ -37,7 +37,7 @@ export default function Login() {
 
         try {
             const response = await axios.post(
-                "http://https://icareteleradiology-backend.vercel.app/api/auth/login",
+                "https://icareteleradiology-backend.vercel.app/api/auth/login",
                 {
                     userName,
                     password,
